@@ -20,10 +20,15 @@
   ],
   "rules": {
     "prettier/prettier": "warn",
+    "func-names": "off",
+    "consistent-return": "off",
     "no-underscore-dangle": "off",
     "@typescript-eslint/lines-between-class-members": "off",
     "@typescript-eslint/no-explicit-any": "off",
-    "@typescript-eslint/no-unused-vars": ["warn", { "argsIgnorePattern": "req|res|next|val" }],
+    "@typescript-eslint/no-unused-vars": [
+      "warn",
+      { "argsIgnorePattern": "req|res|next|val" }
+    ],
     "import/prefer-default-export": "off"
   }
 }
