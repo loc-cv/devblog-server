@@ -1,0 +1,11 @@
+{
+  "dbUrl": "MONGODB_URL",
+  "dbPassword": "MONGODB_PASSWORD",
+
+  "redisHost": "REDIS_HOST",
+  "redisPort": "REDIS_PORT",
+  "redisPassword": "REDIS_PASSWORD",
+
+  "accessTokenPublicKey": "ACCESS_TOKEN_PUBLIC_KEY",
+  "accessTokenPrivateKey": "ACCESS_TOKEN_PRIVATE_KEY"
+}
