@@ -4,6 +4,8 @@ import morgan from 'morgan';
 import cors from 'cors';
 import cookieParser from 'cookie-parser';
 import helmet from 'helmet';
+import notFoundHandler from './middlewares/notfound-handler';
+import globalErrorHandler from './middlewares/global-error-handler';
 
 const app = express();
 
@@ -38,5 +40,10 @@ app.use(express.urlencoded({ extended: true }));
 
 // Cookie parser, writing cookie into req.cookies
 app.use(cookieParser());
+
+// Routes
+// ...
+app.use(notFoundHandler);
+app.use(globalErrorHandler);
 
 export default app;
