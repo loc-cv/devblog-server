@@ -1,4 +1,4 @@
-import { Schema, model } from 'mongoose';
+import { Schema, model, Document, Model } from 'mongoose';
 import bcrypt from 'bcryptjs';
 
 export interface IUser {
@@ -19,7 +19,22 @@ export interface IUser {
   createdAt: Date;
 }
 
-const userSchema = new Schema<IUser>(
+interface IUserMethods {
+  comparePasswords(candidatePassword: string): Promise<boolean>;
+  checkPasswordChanged(tokenIat: number): boolean;
+}
+
+type UserModel = Model<IUser, {}, IUserMethods>;
+
+export type IUserDocument = IUser & Document;
+
+export const excludedFields = [
+  'password',
+  'passwordChangedAt',
+  'refreshTokens',
+];
+
+const userSchema = new Schema<IUser, UserModel, IUserMethods>(
   {
     firstName: {
       type: String,
@@ -88,6 +103,7 @@ userSchema.index({ email: 1 }, { unique: true });
 
 /**
  * Hash user's password before saving to database.
+ *
  * NOTE: This is `save` hook => only executed before .save() or .create()
  */
 userSchema.pre('save', async function (next) {
@@ -102,7 +118,8 @@ userSchema.pre('save', async function (next) {
 });
 
 /**
- * Update `passwordChangedAt` when updating password
+ * Update `passwordChangedAt` when updating password.
+ *
  * NOTE: This is `save` hook => only executed before .save() or .create()
  */
 userSchema.pre('save', async function (next) {
@@ -111,6 +128,33 @@ userSchema.pre('save', async function (next) {
   next();
 });
 
-const User = model<IUser>('User', userSchema);
+/**
+ * Compare password with ecrypted one.
+ *
+ * @async
+ * @param candidatePassword - Password to be compared with ecrypted password.
+ * @returns {Promise<boolean>} A promise whose resolved value is true if 2 passwords are equal, false otherwise.
+ */
+userSchema.methods.comparePasswords = async function (
+  candidatePassword: string,
+) {
+  const isMatch = await bcrypt.compare(candidatePassword, this.password);
+  return isMatch;
+};
+
+/**
+ * Check if user changed password after the token was issued.
+ *
+ * @param tokenIat - The time at which token was issued (in seconds).
+ * @returns true if password has been modified after the token was issued, false otherwise.
+ */
+userSchema.methods.checkPasswordChanged = function (tokenIat: number) {
+  if (this.passwordChangedAt) {
+    return this.passwordChangedAt.getTime() / 1000 - 1 > tokenIat;
+  }
+  return false;
+};
+
+const User = model<IUser, UserModel>('User', userSchema);
 
 export default User;

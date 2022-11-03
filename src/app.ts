@@ -4,8 +4,11 @@ import morgan from 'morgan';
 import cors from 'cors';
 import cookieParser from 'cookie-parser';
 import helmet from 'helmet';
-import notFoundHandler from './middlewares/notfound-handler';
-import globalErrorHandler from './middlewares/global-error-handler';
+import { notFoundHandler } from './middlewares/notfound-handler';
+import { globalErrorHandler } from './middlewares/global-error-handler';
+
+import authRouter from './routes/auth-routes';
+import userRouter from './routes/user-routes';
 
 const app = express();
 
@@ -42,7 +45,8 @@ app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
 // Routes
-// ...
+app.use('/api/v1/auth', authRouter);
+app.use('/api/v1/users', userRouter);
 app.use(notFoundHandler);
 app.use(globalErrorHandler);
 
