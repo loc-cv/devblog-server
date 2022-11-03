@@ -1,27 +1,44 @@
 import config from 'config';
-import { StatusCodes } from 'http-status-codes';
 import { CookieOptions, Request, Response } from 'express';
+import { StatusCodes } from 'http-status-codes';
+import jwt from 'jsonwebtoken';
+import ms from 'ms';
 import {
   createUser,
   findUser,
   generateUsername,
-  signAccessToken,
+  saveUser,
+  signTokens,
+  updateUser,
+  updateUserById,
 } from '../services/user-service';
 import AppError from '../utils/app-error';
+import { verifyJwt } from '../utils/jwt';
+import { isValidObjectId } from '../utils/mongoose';
 
 const accessTokenCookieOptions: CookieOptions = {
   expires: new Date(
-    Date.now() +
-      parseInt(config.get<string>('accessTokenExpiresIn'), 10) * 60 * 1000,
+    Date.now() + ms(config.get<string>('accessTokenExpiresIn')),
   ),
-  maxAge: parseInt(config.get<string>('accessTokenExpiresIn'), 10) * 60 * 1000,
+  maxAge: ms(config.get<string>('accessTokenExpiresIn')),
+  httpOnly: true,
+  sameSite: 'none',
+};
+
+const refreshTokenCookieOptions: CookieOptions = {
+  expires: new Date(
+    Date.now() + ms(config.get<string>('refreshTokenExpiresIn')),
+  ),
+  maxAge: ms(config.get<string>('refreshTokenExpiresIn')),
   httpOnly: true,
   sameSite: 'none',
 };
 
 // Only set secure to true in production
-if (process.env.NODE_ENV === 'production')
+if (process.env.NODE_ENV === 'production') {
   accessTokenCookieOptions.secure = true;
+  refreshTokenCookieOptions.secure = true;
+}
 
 /**
  * Register User
@@ -40,15 +57,23 @@ export const register = async (req: Request, res: Response) => {
     password,
   });
 
-  const accessToken = await signAccessToken(user);
+  const { accessToken, refreshToken } = await signTokens(user);
+
+  user.refreshTokens = [refreshToken];
+  await saveUser(user, { validateModifiedOnly: true });
+
+  if (req.cookies?.refreshToken) {
+    res.clearCookie('refreshToken', refreshTokenCookieOptions);
+  }
 
   res.cookie('accessToken', accessToken, accessTokenCookieOptions);
+  res.cookie('refreshToken', refreshToken, refreshTokenCookieOptions);
   res.cookie('loggedIn', true, {
     ...accessTokenCookieOptions,
     httpOnly: false,
   });
 
-  res.status(StatusCodes.CREATED).json({ status: 'success', accessToken });
+  res.status(StatusCodes.CREATED).json({ status: 'success' });
 };
 
 /**
@@ -68,15 +93,22 @@ export const login = async (req: Request, res: Response) => {
     throw new AppError(StatusCodes.FORBIDDEN, 'This account has been banned');
   }
 
-  const accessToken = await signAccessToken(user);
+  const { accessToken, refreshToken } = await signTokens(user);
+
+  await updateUser({ email }, { $push: { refreshTokens: refreshToken } });
+
+  if (req.cookies?.refreshToken) {
+    res.clearCookie('refreshToken', refreshTokenCookieOptions);
+  }
 
   res.cookie('accessToken', accessToken, accessTokenCookieOptions);
+  res.cookie('refreshToken', refreshToken, refreshTokenCookieOptions);
   res.cookie('loggedIn', true, {
     ...accessTokenCookieOptions,
     httpOnly: false,
   });
 
-  res.status(StatusCodes.OK).json({ status: 'success', accessToken });
+  res.status(StatusCodes.OK).json({ status: 'success' });
 };
 
 /**
@@ -87,7 +119,78 @@ export const login = async (req: Request, res: Response) => {
  */
 export const logout = async (req: Request, res: Response) => {
   res.clearCookie('accessToken', accessTokenCookieOptions);
-  res
-    .status(StatusCodes.OK)
-    .json({ status: 'success', message: 'User logged out' });
+  res.clearCookie('loggedIn', { ...accessTokenCookieOptions, httpOnly: false });
+
+  // const { user } = res.locals;
+  // await redisClient.del(`users#${user._id}`);
+
+  const refreshToken = req.cookies?.refreshToken;
+  if (refreshToken) {
+    await updateUser(
+      { refreshTokens: refreshToken },
+      { $pull: { refreshTokens: refreshToken } },
+    );
+    res.clearCookie('refreshToken', refreshTokenCookieOptions);
+  }
+  res.sendStatus(StatusCodes.NO_CONTENT);
+};
+
+/**
+ * Get a new pair of refresh token and access token
+ * @access Public
+ * @route GET /api/v1/auth/refresh
+ */
+export const refresh = async (req: Request, res: Response) => {
+  const refreshToken = req.cookies?.refreshToken;
+  const errorMessage = 'Could not refresh access token';
+
+  if (!refreshToken) {
+    throw new AppError(StatusCodes.UNAUTHORIZED, errorMessage);
+  }
+  res.clearCookie('refreshToken', refreshTokenCookieOptions);
+
+  const user = await findUser({ refreshTokens: refreshToken });
+
+  // Check for refresh token reuse
+  if (!user) {
+    const decoded = jwt.decode(refreshToken);
+    if (
+      typeof decoded !== 'string' &&
+      decoded?.sub &&
+      isValidObjectId(decoded.sub)
+    ) {
+      await updateUserById(decoded.sub, { $set: { refreshTokens: [] } });
+    }
+    throw new AppError(StatusCodes.UNAUTHORIZED, errorMessage);
+  }
+
+  // Verify refresh token
+  const decoded = verifyJwt<{ sub: string }>(
+    refreshToken,
+    'refreshTokenPublicKey',
+  );
+  if (!decoded) {
+    await updateUserById(String(user._id), {
+      $pull: { refreshTokens: refreshToken },
+    });
+    throw new AppError(StatusCodes.UNAUTHORIZED, errorMessage);
+  }
+
+  const { accessToken: newAccessToken, refreshToken: newRefreshToken } =
+    await signTokens(user);
+
+  await updateUserById(String(user._id), {
+    $pull: { refreshTokens: refreshToken },
+  });
+  await updateUserById(String(user._id), {
+    $push: { refreshTokens: newRefreshToken },
+  });
+
+  res.cookie('accessToken', newAccessToken, accessTokenCookieOptions);
+  res.cookie('refreshToken', newRefreshToken, refreshTokenCookieOptions);
+  res.cookie('loggedIn', true, {
+    ...accessTokenCookieOptions,
+    httpOnly: false,
+  });
+  res.status(StatusCodes.OK).json({ status: 'success' });
 };

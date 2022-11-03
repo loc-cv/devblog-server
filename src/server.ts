@@ -7,7 +7,7 @@ import 'express-async-errors';
 
 import app from './app';
 import connectDb from './utils/connect-db';
-import connectRedis from './utils/connect-redis';
+// import connectRedis from './utils/connect-redis';
 
 dotenv.config();
 
@@ -16,5 +16,5 @@ const port = config.get<number>('port');
 app.listen(port, () => {
   console.log(`Server is listening on port ${port}.`);
   connectDb();
-  connectRedis();
+  // connectRedis();
 });

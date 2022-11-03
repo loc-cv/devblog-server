@@ -1,51 +1,83 @@
 import config from 'config';
-import { FilterQuery, QueryOptions } from 'mongoose';
-import UserModel, { IUser, IUserDocument } from '../models/user-model';
-import { redisClient } from '../utils/connect-redis';
+import _ from 'lodash';
+import { FilterQuery, QueryOptions, SaveOptions, UpdateQuery } from 'mongoose';
+import User, {
+  excludedFields,
+  IUser,
+  IUserDocument,
+} from '../models/user-model';
 import { signJwt } from '../utils/jwt';
 
 export const createUser = async (input: Partial<IUser>) => {
-  const user = await UserModel.create(input);
+  const user = await User.create(input);
   return user;
 };
 
+export const saveUser = async (user: IUserDocument, options?: SaveOptions) => {
+  await user.save(options);
+};
+
 export const findUserById = async (id: string) => {
-  const user = await UserModel.findById(id);
+  const user = await User.findById(id);
   return user;
 };
 
 export const findAllUsers = async () => {
-  const users = await UserModel.find();
+  const users = await User.find();
   return users;
 };
 
 export const findUser = async (
-  query: FilterQuery<IUserDocument>,
-  options: QueryOptions = {},
+  filter: FilterQuery<IUserDocument>,
+  options?: QueryOptions,
 ) => {
-  const user = await UserModel.findOne(query, {}, options);
+  const user = await User.findOne(filter, {}, options);
   return user;
 };
 
-export const signAccessToken = async (user: IUserDocument) => {
-  const accessToken = signJwt(
-    { sub: user._id },
-    { expiresIn: config.get<string>('accessTokenExpiresIn') },
-  );
-
-  // Create a Session
-  redisClient.set(`users#${user._id}`, JSON.stringify(user), { EX: 60 * 60 });
-
-  return accessToken;
+export const updateUserById = async (
+  id: string,
+  update: UpdateQuery<IUserDocument>,
+  options?: QueryOptions,
+) => {
+  const user = await User.findByIdAndUpdate(id, update, options);
+  return user;
 };
 
-export async function generateUsername(firstName: string, lastName: string) {
+export const updateUser = async (
+  filter: FilterQuery<IUserDocument>,
+  update: UpdateQuery<IUserDocument>,
+  options?: QueryOptions,
+) => {
+  const user = await User.findOneAndUpdate(filter, update, options);
+  return user;
+};
+
+export const signTokens = async (user: IUserDocument) => {
+  const accessToken = signJwt({ sub: user._id }, 'accessTokenPrivateKey', {
+    expiresIn: config.get<string>('accessTokenExpiresIn'),
+  });
+  const refreshToken = signJwt({ sub: user._id }, 'refreshTokenPrivateKey', {
+    expiresIn: config.get<string>('refreshTokenExpiresIn'),
+  });
+
+  // // Create a Session
+  // redisClient.set(`users#${user._id}`, JSON.stringify(user), { EX: 60 * 60 });
+
+  return { accessToken, refreshToken };
+};
+
+export const generateUsername = async (firstName: string, lastName: string) => {
   let username = `${firstName}${lastName}`;
-  let user = await UserModel.findOne({ username });
+  let user = await User.findOne({ username });
   while (user) {
     username += (+new Date() * Math.random()).toString().substring(0, 2);
     // eslint-disable-next-line no-await-in-loop
-    user = await UserModel.findOne({ username });
+    user = await User.findOne({ username });
   }
   return username;
-}
+};
+
+export const excludeUserFields = (user: IUserDocument) => {
+  return _.omit(user.toJSON(), excludedFields);
+};

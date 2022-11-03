@@ -1,9 +1,8 @@
 import { NextFunction, Request, Response } from 'express';
 import { StatusCodes } from 'http-status-codes';
-import AppError from '../utils/app-error';
-import { redisClient } from '../utils/connect-redis';
-import { verifyJwt } from '../utils/jwt';
 import { findUserById } from '../services/user-service';
+import AppError from '../utils/app-error';
+import { verifyJwt } from '../utils/jwt';
 
 export const deserializeUser = async (
   req: Request,
@@ -23,7 +22,10 @@ export const deserializeUser = async (
     throw new AppError(StatusCodes.UNAUTHORIZED, 'You are not logged in');
   }
 
-  const decoded = verifyJwt<{ sub: string; iat: number }>(accessToken);
+  const decoded = verifyJwt<{ sub: string; iat: number }>(
+    accessToken,
+    'accessTokenPublicKey',
+  );
   if (!decoded) {
     throw new AppError(
       StatusCodes.UNAUTHORIZED,
@@ -31,14 +33,14 @@ export const deserializeUser = async (
     );
   }
 
-  // Check if user has a valid session
-  const session = await redisClient.get(`users#${decoded.sub}`);
-  if (!session) {
-    throw new AppError(StatusCodes.UNAUTHORIZED, 'User session has expired');
-  }
+  // // Check if user has a valid session
+  // const session = await redisClient.get(`users#${decoded.sub}`);
+  // if (!session) {
+  //   throw new AppError(StatusCodes.UNAUTHORIZED, 'User session has expired');
+  // }
 
   // Check if user still exist
-  const user = await findUserById(JSON.parse(session)._id);
+  const user = await findUserById(decoded.sub);
   if (!user) {
     throw new AppError(
       StatusCodes.UNAUTHORIZED,

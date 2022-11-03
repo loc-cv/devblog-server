@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 import { StatusCodes } from 'http-status-codes';
-import { findAllUsers } from '../services/user-service';
+import { excludeUserFields, findAllUsers } from '../services/user-service';
 
 /**
  * Get all users.
@@ -12,7 +12,7 @@ export const getAllUsers = async (req: Request, res: Response) => {
   res.status(StatusCodes.OK).json({
     status: 'success',
     results: users.length,
-    data: { users },
+    data: { users: users.map(user => excludeUserFields(user)) },
   });
 };
 
@@ -25,6 +25,6 @@ export const getCurrentUser = async (req: Request, res: Response) => {
   const { user } = res.locals;
   res.status(StatusCodes.OK).json({
     status: 'success',
-    data: { user },
+    data: { user: excludeUserFields(user) },
   });
 };

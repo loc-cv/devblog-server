@@ -1,5 +1,6 @@
 {
   "port": 8080,
   "origin": "http://localhost:3000",
-  "accessTokenExpiresIn": "15m"
+  "accessTokenExpiresIn": "15m",
+  "refreshTokenExpiresIn": "2d"
 }
