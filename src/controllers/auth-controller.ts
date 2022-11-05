@@ -23,6 +23,7 @@ const accessTokenCookieOptions: CookieOptions = {
   maxAge: ms(config.get<string>('accessTokenExpiresIn')),
   httpOnly: true,
   sameSite: 'none',
+  secure: true,
 };
 
 const refreshTokenCookieOptions: CookieOptions = {
@@ -32,13 +33,14 @@ const refreshTokenCookieOptions: CookieOptions = {
   maxAge: ms(config.get<string>('refreshTokenExpiresIn')),
   httpOnly: true,
   sameSite: 'none',
+  secure: true,
 };
 
-// Only set secure to true in production
-if (process.env.NODE_ENV === 'production') {
-  accessTokenCookieOptions.secure = true;
-  refreshTokenCookieOptions.secure = true;
-}
+// // Only set secure to true in production
+// if (process.env.NODE_ENV === 'production') {
+//   accessTokenCookieOptions.secure = true;
+//   refreshTokenCookieOptions.secure = true;
+// }
 
 /**
  * Register User
@@ -86,11 +88,14 @@ export const login = async (req: Request, res: Response) => {
 
   const user = await findUser({ email });
   if (!user || !(await user.comparePasswords(password))) {
-    throw new AppError(StatusCodes.UNAUTHORIZED, 'Invalid email or password');
+    throw new AppError(StatusCodes.UNAUTHORIZED, 'Incorrect email or password');
   }
 
   if (user.isBanned) {
-    throw new AppError(StatusCodes.FORBIDDEN, 'This account has been banned');
+    throw new AppError(
+      StatusCodes.UNAUTHORIZED,
+      'This account has been banned',
+    );
   }
 
   const { accessToken, refreshToken } = await signTokens(user);
@@ -145,7 +150,7 @@ export const refresh = async (req: Request, res: Response) => {
   const errorMessage = 'Could not refresh access token';
 
   if (!refreshToken) {
-    throw new AppError(StatusCodes.UNAUTHORIZED, errorMessage);
+    throw new AppError(StatusCodes.FORBIDDEN, errorMessage);
   }
   res.clearCookie('refreshToken', refreshTokenCookieOptions);
 
@@ -161,7 +166,7 @@ export const refresh = async (req: Request, res: Response) => {
     ) {
       await updateUserById(decoded.sub, { $set: { refreshTokens: [] } });
     }
-    throw new AppError(StatusCodes.UNAUTHORIZED, errorMessage);
+    throw new AppError(StatusCodes.FORBIDDEN, errorMessage);
   }
 
   // Verify refresh token
@@ -173,7 +178,7 @@ export const refresh = async (req: Request, res: Response) => {
     await updateUserById(String(user._id), {
       $pull: { refreshTokens: refreshToken },
     });
-    throw new AppError(StatusCodes.UNAUTHORIZED, errorMessage);
+    throw new AppError(StatusCodes.FORBIDDEN, errorMessage);
   }
 
   const { accessToken: newAccessToken, refreshToken: newRefreshToken } =
