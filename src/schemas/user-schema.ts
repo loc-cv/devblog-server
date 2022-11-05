@@ -5,31 +5,33 @@ export const registerFormSchema = z.object({
     .object({
       firstName: z
         .string({
-          required_error: 'First name is required.',
-          invalid_type_error: 'First name must be a string.',
+          invalid_type_error: 'First name must be a string',
+          required_error: 'First name is required',
         })
         .trim()
-        .min(1, { message: "First name can't be empty." })
-        .max(30, { message: 'First name character limit is 30 characters.' }),
+        .min(1, { message: 'First name is required' })
+        .max(30, { message: 'First name character limit is 30 characters' }),
 
       lastName: z
         .string({
-          required_error: 'Last name is required.',
-          invalid_type_error: 'Last name must be a string.',
+          invalid_type_error: 'Last name must be a string',
+          required_error: 'Last name is required',
         })
         .trim()
-        .min(1, { message: "Last name can't be empty." })
-        .max(30, { message: 'Last name character limit is 30 characters.' }),
+        .min(1, { message: 'Last name is required' })
+        .max(30, { message: 'Last name character limit is 30 characters' }),
 
       email: z
-        .string({ required_error: 'Email is required.' })
-        .email({ message: 'Invalid email address.' }),
+        .string({ required_error: 'Email address is required' })
+        .min(1, { message: 'Email address is required' })
+        .email({ message: 'Invalid email address' }),
 
       password: z
         .string({
-          required_error: 'Password is required.',
-          invalid_type_error: 'Password must be a string.',
+          invalid_type_error: 'Password must be a string',
+          required_error: 'Password is required',
         })
+        .min(1, { message: 'Password is required' })
         .regex(
           // https://stackoverflow.com/a/21456918
           /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/,
@@ -39,29 +41,32 @@ export const registerFormSchema = z.object({
           },
         ),
 
-      passwordConfirm: z.string({
-        required_error: 'Please confirm your password.',
-        invalid_type_error: 'Password must be a string.',
-      }),
+      passwordConfirm: z
+        .string({
+          invalid_type_error: 'Password must be a string.',
+          required_error: 'Please confirm your password',
+        })
+        .min(1, { message: 'Please confirm your password' }),
     })
     .refine(data => data.password === data.passwordConfirm, {
       path: ['passwordConfirm'],
-      message: 'Password confirmation does not match.',
+      message: 'Password confirmation does not match',
     }),
 });
 
 export const loginFormSchema = z.object({
   body: z.object({
     email: z
-      .string({ required_error: 'Email is required.' })
-      .email({ message: 'Invalid email or password.' }),
+      .string({ required_error: 'Email address is required' })
+      .min(1, { message: 'Email address is required' })
+      .email({ message: 'Invalid email address' }),
 
     password: z
       .string({
-        required_error: 'Password is required.',
-        invalid_type_error: 'Password must be a string.',
+        invalid_type_error: 'Password must be a string',
+        required_error: 'Password is required',
       })
-      .min(8, 'Invalid email or password.'),
+      .min(1, 'Password is required'),
   }),
 });
 
