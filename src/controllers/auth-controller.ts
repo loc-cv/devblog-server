@@ -70,12 +70,11 @@ export const register = async (req: Request, res: Response) => {
 
   res.cookie('accessToken', accessToken, accessTokenCookieOptions);
   res.cookie('refreshToken', refreshToken, refreshTokenCookieOptions);
-  res.cookie('loggedIn', true, {
-    ...accessTokenCookieOptions,
-    httpOnly: false,
-  });
 
-  res.status(StatusCodes.CREATED).json({ status: 'success' });
+  res.status(StatusCodes.CREATED).json({
+    status: 'success',
+    message: 'Your registration has been successfully completed',
+  });
 };
 
 /**
@@ -92,10 +91,7 @@ export const login = async (req: Request, res: Response) => {
   }
 
   if (user.isBanned) {
-    throw new AppError(
-      StatusCodes.UNAUTHORIZED,
-      'This account has been banned',
-    );
+    throw new AppError(StatusCodes.FORBIDDEN, 'This account has been banned');
   }
 
   const { accessToken, refreshToken } = await signTokens(user);
@@ -108,12 +104,10 @@ export const login = async (req: Request, res: Response) => {
 
   res.cookie('accessToken', accessToken, accessTokenCookieOptions);
   res.cookie('refreshToken', refreshToken, refreshTokenCookieOptions);
-  res.cookie('loggedIn', true, {
-    ...accessTokenCookieOptions,
-    httpOnly: false,
-  });
 
-  res.status(StatusCodes.OK).json({ status: 'success' });
+  res
+    .status(StatusCodes.OK)
+    .json({ status: 'success', message: 'Logged in successfully' });
 };
 
 /**
@@ -124,7 +118,6 @@ export const login = async (req: Request, res: Response) => {
  */
 export const logout = async (req: Request, res: Response) => {
   res.clearCookie('accessToken', accessTokenCookieOptions);
-  res.clearCookie('loggedIn', { ...accessTokenCookieOptions, httpOnly: false });
 
   // const { user } = res.locals;
   // await redisClient.del(`users#${user._id}`);
@@ -193,9 +186,9 @@ export const refresh = async (req: Request, res: Response) => {
 
   res.cookie('accessToken', newAccessToken, accessTokenCookieOptions);
   res.cookie('refreshToken', newRefreshToken, refreshTokenCookieOptions);
-  res.cookie('loggedIn', true, {
-    ...accessTokenCookieOptions,
-    httpOnly: false,
+
+  res.status(StatusCodes.OK).json({
+    status: 'success',
+    message: 'Access token refreshed successfully',
   });
-  res.status(StatusCodes.OK).json({ status: 'success' });
 };

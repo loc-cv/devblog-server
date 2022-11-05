@@ -9,10 +9,13 @@ export const requireAuth = async (
 ) => {
   const { user } = res.locals;
   if (!user) {
-    throw new AppError(
-      StatusCodes.UNAUTHORIZED,
-      'Invalid token or session has expired',
-    );
+    throw new AppError(StatusCodes.UNAUTHORIZED, 'You are not logged in');
   }
+
+  // Check if user account has been banned
+  if (user.isBanned) {
+    throw new AppError(StatusCodes.FORBIDDEN, 'This account has been banned');
+  }
+
   next();
 };

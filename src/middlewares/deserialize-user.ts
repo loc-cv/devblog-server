@@ -27,10 +27,7 @@ export const deserializeUser = async (
     'accessTokenPublicKey',
   );
   if (!decoded) {
-    throw new AppError(
-      StatusCodes.UNAUTHORIZED,
-      "Invalid token or user doesn't exist",
-    );
+    throw new AppError(StatusCodes.UNAUTHORIZED, 'Invalid access token');
   }
 
   // // Check if user has a valid session
