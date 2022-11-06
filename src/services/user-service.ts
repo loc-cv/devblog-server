@@ -13,8 +13,8 @@ export const createUser = async (input: Partial<IUser>) => {
   return user;
 };
 
-export const saveUser = async (user: IUserDocument, options?: SaveOptions) => {
-  await user.save(options);
+export const saveUser = async (user: IUserDocument) => {
+  await user.save({ validateModifiedOnly: true });
 };
 
 export const findUserById = async (id: string) => {

@@ -62,7 +62,7 @@ export const register = async (req: Request, res: Response) => {
   const { accessToken, refreshToken } = await signTokens(user);
 
   user.refreshTokens = [refreshToken];
-  await saveUser(user, { validateModifiedOnly: true });
+  await saveUser(user);
 
   if (req.cookies?.refreshToken) {
     res.clearCookie('refreshToken', refreshTokenCookieOptions);
