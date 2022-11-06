@@ -133,7 +133,7 @@ userSchema.pre('save', async function (next) {
  *
  * @async
  * @param candidatePassword - Password to be compared with ecrypted password.
- * @returns {Promise<boolean>} A promise whose resolved value is true if 2 passwords are equal, false otherwise.
+ * @returns A promise whose resolved value is true if 2 passwords are equal, false otherwise.
  */
 userSchema.methods.comparePasswords = async function (
   candidatePassword: string,
