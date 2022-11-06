@@ -1,5 +1,5 @@
 import bcrypt from 'bcryptjs';
-import { Document, model, Model, Schema } from 'mongoose';
+import { Document, model, Model, Schema, Types } from 'mongoose';
 
 export interface IUser {
   firstName: string;
@@ -13,7 +13,7 @@ export interface IUser {
   postCount: number;
   isBanned: boolean;
   passwordChangedAt?: Date;
-  refreshTokens: string[];
+  refreshTokens: Types.Array<string>;
   verified: boolean;
   updatedAt: Date;
   createdAt: Date;
@@ -94,9 +94,7 @@ const userSchema = new Schema<IUser, UserModel, IUserMethods>(
       default: false,
     },
   },
-  {
-    timestamps: true,
-  },
+  { timestamps: true },
 );
 
 userSchema.index({ email: 1 }, { unique: true });
