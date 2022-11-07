@@ -11,6 +11,7 @@ export interface IUser {
   profilePhoto: string;
   bio?: string;
   postCount: number;
+  savedPosts: Types.ObjectId[];
   isBanned: boolean;
   passwordChangedAt?: Date;
   refreshTokens: Types.Array<string>;
@@ -83,6 +84,7 @@ const userSchema = new Schema<IUser, UserModel, IUserMethods>(
       type: Number,
       default: 0,
     },
+    savedPosts: [{ type: Schema.Types.ObjectId, ref: 'Post' }],
     isBanned: {
       type: Boolean,
       default: false,
