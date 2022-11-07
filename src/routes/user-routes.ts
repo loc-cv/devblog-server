@@ -6,10 +6,11 @@ import { restrictTo } from '../middlewares/restrict-to';
 
 const router = express.Router();
 
+// User routes
 router.use(deserializeUser, requireAuth);
-
-router.get('/', restrictTo('admin'), getAllUsers);
-
 router.get('/me', getCurrentUser);
+
+// Admin routes
+router.get('/', restrictTo('admin'), getAllUsers);
 
 export default router;

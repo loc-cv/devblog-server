@@ -1,6 +1,6 @@
 import config from 'config';
 import _ from 'lodash';
-import { FilterQuery, QueryOptions, SaveOptions, UpdateQuery } from 'mongoose';
+import { FilterQuery, QueryOptions, UpdateQuery } from 'mongoose';
 import User, {
   excludedFields,
   IUser,
@@ -8,7 +8,7 @@ import User, {
 } from '../models/user-model';
 import { signJwt } from '../utils/jwt';
 
-export const createUser = async (input: Partial<IUser>) => {
+export const createNewUser = async (input: Partial<IUser>) => {
   const user = await User.create(input);
   return user;
 };
@@ -27,7 +27,7 @@ export const findAllUsers = async () => {
   return users;
 };
 
-export const findUser = async (
+export const findOneUser = async (
   filter: FilterQuery<IUserDocument>,
   options?: QueryOptions,
 ) => {
@@ -44,7 +44,7 @@ export const updateUserById = async (
   return user;
 };
 
-export const updateUser = async (
+export const updateOneUser = async (
   filter: FilterQuery<IUserDocument>,
   update: UpdateQuery<IUserDocument>,
   options?: QueryOptions,

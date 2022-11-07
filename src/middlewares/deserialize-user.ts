@@ -9,15 +9,7 @@ export const deserializeUser = async (
   res: Response,
   next: NextFunction,
 ) => {
-  let accessToken: string | null;
-  const authHeader = req.headers.authorization;
-  if (authHeader && authHeader.startsWith('Bearer')) {
-    [accessToken] = authHeader.split(' ');
-  } else if (req.cookies.accessToken) {
-    accessToken = req.cookies.accessToken;
-  } else {
-    accessToken = null;
-  }
+  const accessToken = req.cookies?.accessToken;
   if (!accessToken) {
     throw new AppError(StatusCodes.UNAUTHORIZED, 'You are not logged in');
   }

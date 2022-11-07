@@ -4,12 +4,12 @@ import { StatusCodes } from 'http-status-codes';
 import jwt from 'jsonwebtoken';
 import ms from 'ms';
 import {
-  createUser,
-  findUser,
+  createNewUser,
+  findOneUser,
   generateUsername,
   saveUser,
   signTokens,
-  updateUser,
+  updateOneUser,
   updateUserById,
 } from '../services/user-service';
 import AppError from '../utils/app-error';
@@ -23,7 +23,7 @@ const accessTokenCookieOptions: CookieOptions = {
   maxAge: ms(config.get<string>('accessTokenExpiresIn')),
   httpOnly: true,
   sameSite: 'none',
-  secure: true,
+  secure: false,
 };
 
 const refreshTokenCookieOptions: CookieOptions = {
@@ -33,14 +33,8 @@ const refreshTokenCookieOptions: CookieOptions = {
   maxAge: ms(config.get<string>('refreshTokenExpiresIn')),
   httpOnly: true,
   sameSite: 'none',
-  secure: true,
+  secure: false,
 };
-
-// // Only set secure to true in production
-// if (process.env.NODE_ENV === 'production') {
-//   accessTokenCookieOptions.secure = true;
-//   refreshTokenCookieOptions.secure = true;
-// }
 
 /**
  * Register User
@@ -51,7 +45,7 @@ export const register = async (req: Request, res: Response) => {
   const { firstName, lastName, email, password } = req.body;
   const username = await generateUsername(firstName, lastName);
 
-  const user = await createUser({
+  const user = await createNewUser({
     firstName,
     lastName,
     email,
@@ -61,7 +55,7 @@ export const register = async (req: Request, res: Response) => {
 
   const { accessToken, refreshToken } = await signTokens(user);
 
-  user.refreshTokens = [refreshToken];
+  user.refreshTokens.push(refreshToken);
   await saveUser(user);
 
   if (req.cookies?.refreshToken) {
@@ -85,7 +79,7 @@ export const register = async (req: Request, res: Response) => {
 export const login = async (req: Request, res: Response) => {
   const { email, password } = req.body;
 
-  const user = await findUser({ email });
+  const user = await findOneUser({ email });
   if (!user || !(await user.comparePasswords(password))) {
     throw new AppError(StatusCodes.UNAUTHORIZED, 'Incorrect email or password');
   }
@@ -96,7 +90,7 @@ export const login = async (req: Request, res: Response) => {
 
   const { accessToken, refreshToken } = await signTokens(user);
 
-  await updateUser({ email }, { $push: { refreshTokens: refreshToken } });
+  await updateOneUser({ email }, { $push: { refreshTokens: refreshToken } });
 
   if (req.cookies?.refreshToken) {
     res.clearCookie('refreshToken', refreshTokenCookieOptions);
@@ -112,7 +106,6 @@ export const login = async (req: Request, res: Response) => {
 
 /**
  * Log out user
- * NOTE: On client, also delete the accessToken
  * @access Public
  * @route POST /api/auth/logout
  */
@@ -124,7 +117,7 @@ export const logout = async (req: Request, res: Response) => {
 
   const refreshToken = req.cookies?.refreshToken;
   if (refreshToken) {
-    await updateUser(
+    await updateOneUser(
       { refreshTokens: refreshToken },
       { $pull: { refreshTokens: refreshToken } },
     );
@@ -147,7 +140,7 @@ export const refresh = async (req: Request, res: Response) => {
   }
   res.clearCookie('refreshToken', refreshTokenCookieOptions);
 
-  const user = await findUser({ refreshTokens: refreshToken });
+  const user = await findOneUser({ refreshTokens: refreshToken });
 
   // Check for refresh token reuse
   if (!user) {
