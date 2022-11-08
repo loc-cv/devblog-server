@@ -1,4 +1,4 @@
-import { Response, Request } from 'express';
+import { Request, Response } from 'express';
 import { StatusCodes } from 'http-status-codes';
 import {
   createNewTag,
@@ -33,7 +33,21 @@ export const createTag = async (req: Request, res: Response) => {
  * @access public
  */
 export const getAllTags = async (req: Request, res: Response) => {
-  const tags = await findAllTags();
+  const page =
+    (typeof req.query.page === 'string' && parseInt(req.query.page, 10)) || 1;
+  const limit =
+    (typeof req.query.limit === 'string' && parseInt(req.query.limit, 10)) ||
+    10;
+
+  if (page < 0 || limit < 0) {
+    throw new AppError(
+      StatusCodes.BAD_REQUEST,
+      'Please provide positive values for page and limit',
+    );
+  }
+
+  const tags = await findAllTags({ page, limit });
+
   res.status(StatusCodes.OK).json({
     status: 'success',
     results: tags.length,
