@@ -8,7 +8,7 @@ export const createNewTag = async (input: Partial<ITag>) => {
   return tag;
 };
 
-export const findAllTags = async (options?: {
+export const findAllTags = async (queryOptions?: {
   page?: number;
   limit?: number;
 }) => {
@@ -17,8 +17,8 @@ export const findAllTags = async (options?: {
     .populate('createdBy', populatedUserFields)
     .populate('lastUpdatedBy', populatedUserFields);
 
-  const page = options?.page || 1;
-  const limit = options?.limit || 10;
+  const page = queryOptions?.page || 1;
+  const limit = queryOptions?.limit || 10;
   const skip = (page - 1) * limit;
   query.skip(skip).limit(limit);
 

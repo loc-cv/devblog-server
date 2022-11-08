@@ -22,14 +22,14 @@ export const findUserById = async (id: string) => {
   return user;
 };
 
-export const findAllUsers = async (options?: {
+export const findAllUsers = async (queryOptions?: {
   page?: number;
   limit?: number;
 }) => {
   const query = User.find().sort('-createdAt');
 
-  const page = options?.page || 1;
-  const limit = options?.limit || 10;
+  const page = queryOptions?.page || 1;
+  const limit = queryOptions?.limit || 10;
   const skip = (page - 1) * limit;
   query.skip(skip).limit(limit);
 
