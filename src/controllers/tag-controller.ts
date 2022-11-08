@@ -16,9 +16,10 @@ import AppError from '../utils/app-error';
  */
 export const createTag = async (req: Request, res: Response) => {
   const { user } = res.locals;
-  const { description, name } = req.body;
+  const { description } = req.body;
+  const name = req.body.name as string;
   const tag = await createNewTag({
-    name,
+    name: name.toLowerCase(),
     description,
     createdBy: user._id,
     lastUpdatedBy: user._id,
