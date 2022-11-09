@@ -1,11 +1,13 @@
 import config from 'config';
-import _ from 'lodash';
+import { StatusCodes } from 'http-status-codes';
+import _, { parseInt } from 'lodash';
 import { FilterQuery, QueryOptions, UpdateQuery } from 'mongoose';
 import User, {
   excludedFields,
   IUser,
   IUserDocument,
 } from '../models/user-model';
+import AppError from '../utils/app-error';
 import { signJwt } from '../utils/jwt';
 
 export const createNewUser = async (input: Partial<IUser>) => {
@@ -22,14 +24,24 @@ export const findUserById = async (id: string) => {
   return user;
 };
 
-export const findAllUsers = async (queryOptions?: {
-  page?: number;
-  limit?: number;
-}) => {
+export const findAllUsers = async (
+  queryString: Record<string, unknown> = {},
+) => {
   const query = User.find().sort('-createdAt');
 
-  const page = queryOptions?.page || 1;
-  const limit = queryOptions?.limit || 10;
+  const page =
+    (typeof queryString.page === 'string' && parseInt(queryString.page, 10)) ||
+    1;
+  const limit =
+    (typeof queryString.limit === 'string' &&
+      parseInt(queryString.limit, 10)) ||
+    10;
+  if (page < 0 || limit < 0) {
+    throw new AppError(
+      StatusCodes.BAD_REQUEST,
+      'Please provide positive values for page and limit',
+    );
+  }
   const skip = (page - 1) * limit;
   query.skip(skip).limit(limit);
 

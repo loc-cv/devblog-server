@@ -1,5 +1,7 @@
+import { StatusCodes } from 'http-status-codes';
 import { FilterQuery, QueryOptions, UpdateQuery } from 'mongoose';
 import Tag, { ITag, ITagDocument } from '../models/tag-model';
+import AppError from '../utils/app-error';
 
 const populatedUserFields = 'email username firstName lastName profilePhoto';
 
@@ -8,17 +10,27 @@ export const createNewTag = async (input: Partial<ITag>) => {
   return tag;
 };
 
-export const findAllTags = async (queryOptions?: {
-  page?: number;
-  limit?: number;
-}) => {
+export const findAllTags = async (
+  queryString: Record<string, unknown> = {},
+) => {
   const query = Tag.find()
     .sort('-createdAt')
     .populate('createdBy', populatedUserFields)
     .populate('lastUpdatedBy', populatedUserFields);
 
-  const page = queryOptions?.page || 1;
-  const limit = queryOptions?.limit || 10;
+  const page =
+    (typeof queryString.page === 'string' && parseInt(queryString.page, 10)) ||
+    1;
+  const limit =
+    (typeof queryString.limit === 'string' &&
+      parseInt(queryString.limit, 10)) ||
+    10;
+  if (page < 0 || limit < 0) {
+    throw new AppError(
+      StatusCodes.BAD_REQUEST,
+      'Please provide positive values for page and limit',
+    );
+  }
   const skip = (page - 1) * limit;
   query.skip(skip).limit(limit);
 
