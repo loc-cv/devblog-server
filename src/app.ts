@@ -10,6 +10,7 @@ import { globalErrorHandler } from './middlewares/global-error-handler';
 import authRouter from './routes/auth-routes';
 import userRouter from './routes/user-routes';
 import tagRouter from './routes/tag-routes';
+import postRouter from './routes/post-routes';
 
 const app = express();
 
@@ -49,6 +50,7 @@ app.use(cookieParser());
 app.use('/api/v1/auth', authRouter);
 app.use('/api/v1/users', userRouter);
 app.use('/api/v1/tags', tagRouter);
+app.use('/api/v1/posts', postRouter);
 app.use(notFoundHandler);
 app.use(globalErrorHandler);
 
