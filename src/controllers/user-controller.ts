@@ -1,10 +1,12 @@
 import { Request, Response } from 'express';
 import { StatusCodes } from 'http-status-codes';
+import { findPostById } from '../services/post-service';
 import {
   deleteUserById,
   excludeUserFields,
   findAllUsers,
   findUserById,
+  getUserSavedPosts,
   isUsernameUnique,
   saveUser,
   signTokens,
@@ -202,4 +204,45 @@ export const updateCurrentUser = async (req: Request, res: Response) => {
   res
     .status(StatusCodes.OK)
     .json({ status: 'success', message: 'Update your info successfully' });
+};
+
+/**
+ * Get all saved posts of current user
+ * @route GET /api/users/me/savedposts
+ * @access user
+ */
+export const getCurrentUserSavedPosts = async (req: Request, res: Response) => {
+  const { user } = res.locals;
+  const currentUser = await findUserById(user._id);
+  if (!currentUser) {
+    throw new AppError(StatusCodes.NOT_FOUND, 'Current user no longer exists');
+  }
+
+  const savedPosts = await getUserSavedPosts(currentUser);
+
+  res.status(StatusCodes.OK).json({
+    status: 'success',
+    results: savedPosts.length,
+    data: { posts: savedPosts },
+  });
+};
+
+/**
+ * Add post to current user savedPosts
+ * @route POST /api/users/me/savedposts
+ * @access user
+ */
+export const addPostToSaveList = async (req: Request, res: Response) => {
+  const { postId } = req.body;
+  const post = await findPostById(postId);
+  if (!post) {
+    throw new AppError(StatusCodes.NOT_FOUND, `No post with ID: ${postId}`);
+  }
+
+  const { user } = res.locals;
+  await updateUserById(user._id, { $push: { savedPosts: post } });
+  res.status(StatusCodes.OK).json({
+    status: 'success',
+    message: 'Post added to your save list',
+  });
 };

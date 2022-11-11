@@ -1,8 +1,10 @@
 import express from 'express';
 import {
+  addPostToSaveList,
   deleteUser,
   getAllUsers,
   getCurrentUser,
+  getCurrentUserSavedPosts,
   getSingleUser,
   toggleBanUser,
   updateCurrentUser,
@@ -14,6 +16,7 @@ import { requireAuth } from '../middlewares/require-auth';
 import { restrictTo } from '../middlewares/restrict-to';
 import { validate } from '../middlewares/validate';
 import {
+  addPostToSaveListInputSchema,
   updatePasswordInputSchema,
   updateUserInputSchema,
 } from '../schemas/user-schema';
@@ -30,6 +33,10 @@ router
   .route('/me/password')
   .put(validate(updatePasswordInputSchema), updateCurrentUserPassword);
 router.route('/:userId').get(getSingleUser);
+router
+  .route('/me/savedposts')
+  .get(getCurrentUserSavedPosts)
+  .post(validate(addPostToSaveListInputSchema), addPostToSaveList);
 
 // Admin routes
 router.use(restrictTo('admin'));

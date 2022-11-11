@@ -148,7 +148,23 @@ export const updatePasswordInputSchema = z.object({
     }),
 });
 
+export const addPostToSaveListInputSchema = z.object({
+  body: z.object({
+    postId: z
+      .string({
+        invalid_type_error: 'Post ID must be a string',
+        required_error: 'Please provide post ID',
+      })
+      .min(1, {
+        message: 'Please provide post ID',
+      }),
+  }),
+});
+
 export type RegisterFormInput = z.infer<typeof registerFormSchema>;
 export type LoginFormInput = z.infer<typeof loginFormSchema>;
 export type UpdateUserInput = z.infer<typeof updateUserInputSchema>;
 export type UpdatePasswordInput = z.infer<typeof updatePasswordInputSchema>;
+export type AddPostToSaveListInput = z.infer<
+  typeof addPostToSaveListInputSchema
+>;

@@ -10,6 +10,10 @@ import User, {
 import AppError from '../utils/app-error';
 import { signJwt } from '../utils/jwt';
 
+const populatedUserFields =
+  'email username firstName lastName profilePhoto isBanned';
+const populatedTagsFields = 'name';
+
 export const createNewUser = async (input: Partial<IUser>) => {
   const user = await User.create(input);
   return user;
@@ -78,6 +82,17 @@ export const updateOneUser = async (
 export const deleteUserById = async (id: string) => {
   const user = await User.findByIdAndDelete(id);
   return user;
+};
+
+export const getUserSavedPosts = async (user: IUserDocument) => {
+  await user.populate({
+    path: 'savedPosts',
+    populate: [
+      { path: 'author', select: populatedUserFields },
+      { path: 'tags', select: populatedTagsFields },
+    ],
+  });
+  return user.savedPosts;
 };
 
 export const signTokens = async (user: IUserDocument) => {
