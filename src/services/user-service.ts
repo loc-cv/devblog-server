@@ -75,6 +75,11 @@ export const updateOneUser = async (
   return user;
 };
 
+export const deleteUserById = async (id: string) => {
+  const user = await User.findByIdAndDelete(id);
+  return user;
+};
+
 export const signTokens = async (user: IUserDocument) => {
   const accessToken = signJwt({ sub: user._id }, 'accessTokenPrivateKey', {
     expiresIn: config.get<string>('accessTokenExpiresIn'),
@@ -98,6 +103,12 @@ export const generateUsername = async (firstName: string, lastName: string) => {
     user = await User.findOne({ username });
   }
   return username;
+};
+
+export const isUsernameUnique = async (username: string) => {
+  const user = await findOneUser({ username });
+  if (user) return false;
+  return true;
 };
 
 export const excludeUserFields = (user: IUserDocument) => {

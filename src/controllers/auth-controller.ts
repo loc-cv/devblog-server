@@ -16,7 +16,7 @@ import AppError from '../utils/app-error';
 import { verifyJwt } from '../utils/jwt';
 import { isValidObjectId } from '../utils/mongoose';
 
-const accessTokenCookieOptions: CookieOptions = {
+export const accessTokenCookieOptions: CookieOptions = {
   expires: new Date(
     Date.now() + ms(config.get<string>('accessTokenExpiresIn')),
   ),
@@ -26,7 +26,7 @@ const accessTokenCookieOptions: CookieOptions = {
   secure: false,
 };
 
-const refreshTokenCookieOptions: CookieOptions = {
+export const refreshTokenCookieOptions: CookieOptions = {
   expires: new Date(
     Date.now() + ms(config.get<string>('refreshTokenExpiresIn')),
   ),
@@ -55,7 +55,7 @@ export const register = async (req: Request, res: Response) => {
 
   const { accessToken, refreshToken } = await signTokens(user);
 
-  user.refreshTokens.push(refreshToken);
+  user.refreshTokens = [refreshToken];
   await saveUser(user);
 
   if (req.cookies?.refreshToken) {
@@ -85,7 +85,10 @@ export const login = async (req: Request, res: Response) => {
   }
 
   if (user.isBanned) {
-    throw new AppError(StatusCodes.FORBIDDEN, 'This account has been banned');
+    throw new AppError(
+      StatusCodes.UNAUTHORIZED,
+      'This account has been banned',
+    );
   }
 
   const { accessToken, refreshToken } = await signTokens(user);
@@ -150,7 +153,11 @@ export const refresh = async (req: Request, res: Response) => {
       decoded?.sub &&
       isValidObjectId(decoded.sub)
     ) {
-      await updateUserById(decoded.sub, { $set: { refreshTokens: [] } });
+      try {
+        await updateUserById(decoded.sub, { $set: { refreshTokens: [] } });
+      } catch (error) {
+        console.log(error);
+      }
     }
     throw new AppError(StatusCodes.FORBIDDEN, errorMessage);
   }

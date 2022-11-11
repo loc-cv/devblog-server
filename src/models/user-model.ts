@@ -14,7 +14,7 @@ export interface IUser {
   savedPosts: Types.ObjectId[];
   isBanned: boolean;
   passwordChangedAt?: Date;
-  refreshTokens: Types.Array<string>;
+  refreshTokens: string[];
   verified: boolean;
   updatedAt: Date;
   createdAt: Date;
@@ -54,6 +54,8 @@ const userSchema = new Schema<IUser, UserModel, IUserMethods>(
       required: [true, 'Username is required.'],
       trim: true,
       unique: true,
+      minlength: [3, 'Username must have at least 3 characters'],
+      maxlength: [30, 'Username character limit is 30 characters'],
     },
     email: {
       type: String,
