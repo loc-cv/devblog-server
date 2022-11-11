@@ -2,13 +2,13 @@ import { FilterQuery, QueryOptions, UpdateQuery } from 'mongoose';
 import Comment, { IComment, ICommentDocument } from '../models/comment-model';
 import { IUser } from '../models/user-model';
 
-const populatedAuthorFields =
+const populatedUserFields =
   'email username firstName lastName profilePhoto isBanned';
 
 export const findCommentById = async (id: string) => {
   const comment = await Comment.findById(id).populate<{ author: IUser }>(
     'author',
-    populatedAuthorFields,
+    populatedUserFields,
   );
 
   return comment;

@@ -7,7 +7,7 @@ import AppError from '../utils/app-error';
 import { findOneTag } from './tag-service';
 import { findOneUser } from './user-service';
 
-const populatedAuthorFields =
+const populatedUserFields =
   'email username firstName lastName profilePhoto isBanned';
 const populatedTagsFields = 'name';
 
@@ -43,7 +43,7 @@ export const createNewPost = async (input: Partial<IPost>, tags: string) => {
   const filteredTags = await filterTags(tags);
   const post = await Post.create({ ...input, tags: filteredTags });
   await post.populate('tags', populatedTagsFields);
-  await post.populate('author', populatedAuthorFields);
+  await post.populate('author', populatedUserFields);
   return post;
 };
 
@@ -74,7 +74,7 @@ export const findAllPosts = async (
   query.skip(skip).limit(limit);
 
   let posts = await query
-    .populate<{ author: IUser }>('author', populatedAuthorFields)
+    .populate<{ author: IUser }>('author', populatedUserFields)
     .populate<{ tags: ITag[] }>('tags', populatedTagsFields);
 
   posts = posts.filter(post => !post.author.isBanned);
@@ -111,7 +111,7 @@ export const findAllPosts = async (
 
 export const findPostById = async (id: string) => {
   const post = await Post.findById(id)
-    .populate<{ author: IUser }>('author', populatedAuthorFields)
+    .populate<{ author: IUser }>('author', populatedUserFields)
     .populate<{ tags: ITag[] }>('tags', populatedTagsFields);
   return post;
 };
@@ -122,7 +122,7 @@ export const updatePostById = async (
   options?: QueryOptions,
 ) => {
   const post = await Post.findByIdAndUpdate(id, update, options)
-    .populate<{ author: IUser }>('author', populatedAuthorFields)
+    .populate<{ author: IUser }>('author', populatedUserFields)
     .populate<{ tags: ITag[] }>('tags', populatedTagsFields);
   return post;
 };
