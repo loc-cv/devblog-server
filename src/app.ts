@@ -12,6 +12,7 @@ import userRouter from './routes/user-routes';
 import tagRouter from './routes/tag-routes';
 import postRouter from './routes/post-routes';
 import commentRouter from './routes/comment-routes';
+import reportRouter from './routes/report-routes';
 
 const app = express();
 
@@ -53,6 +54,7 @@ app.use('/api/v1/users', userRouter);
 app.use('/api/v1/tags', tagRouter);
 app.use('/api/v1/posts', postRouter);
 app.use('/api/v1/comments', commentRouter);
+app.use('/api/v1/reports', reportRouter);
 app.use(notFoundHandler);
 app.use(globalErrorHandler);
 
