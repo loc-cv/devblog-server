@@ -20,12 +20,14 @@ export const createNewComment = async (input: Partial<IComment>) => {
 };
 
 export const findComments = async (filter?: FilterQuery<ICommentDocument>) => {
-  let comments = [];
+  let query;
   if (filter) {
-    comments = await Comment.find(filter).sort('-createdAt');
+    query = Comment.find(filter);
   } else {
-    comments = await Comment.find().sort('-createdAt');
+    query = Comment.find();
   }
+  query.sort('-createdAt').populate('author', populatedUserFields);
+  const comments = await query;
   return comments;
 };
 
