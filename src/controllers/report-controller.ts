@@ -25,12 +25,14 @@ export const createReport = async (req: Request, res: Response) => {
       `Cannot find any post with ID: ${postId}`,
     );
   }
-  const report = await createNewReport({
+  await createNewReport({
     post: post._id,
-    submittedBy: user,
+    submittedBy: user._id,
     reason,
   });
-  res.status(StatusCodes.CREATED).json({ status: 'success', data: { report } });
+  res
+    .status(StatusCodes.CREATED)
+    .json({ status: 'success', message: 'New report created successfully' });
 };
 
 /**

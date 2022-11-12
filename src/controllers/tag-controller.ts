@@ -18,13 +18,15 @@ export const createTag = async (req: Request, res: Response) => {
   const { user } = res.locals;
   const { description } = req.body;
   const name = req.body.name as string;
-  const tag = await createNewTag({
+  await createNewTag({
     name: name.toLowerCase(),
     description,
     createdBy: user._id,
     lastUpdatedBy: user._id,
   });
-  res.status(StatusCodes.CREATED).json({ status: 'success', data: { tag } });
+  res
+    .status(StatusCodes.CREATED)
+    .json({ status: 'success', message: 'New tag created successfully' });
 };
 
 /**

@@ -42,7 +42,7 @@ export const createComment = async (req: Request, res: Response) => {
     }
   }
 
-  const comment = await createNewComment({
+  await createNewComment({
     post: post._id,
     author: user._id,
     parent: parentId || null,
@@ -51,7 +51,7 @@ export const createComment = async (req: Request, res: Response) => {
 
   res
     .status(StatusCodes.CREATED)
-    .json({ status: 'success', data: { comment } });
+    .json({ status: 'success', message: 'New comment created successfully ' });
 };
 
 /**

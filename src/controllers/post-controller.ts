@@ -23,14 +23,11 @@ export const createPost = async (req: Request, res: Response) => {
     body: { title, summary, content, tags },
   } = req as NewPostInput;
 
-  const post = await createNewPost(
-    { title, summary, content, author: user._id },
-    tags,
-  );
-
+  await createNewPost({ title, summary, content, author: user._id }, tags);
   await updateUserById(user._id, { $inc: { postCount: 1 } });
-
-  res.status(StatusCodes.CREATED).json({ status: 'success', data: { post } });
+  res
+    .status(StatusCodes.CREATED)
+    .json({ status: 'success', message: 'New post created successfully' });
 };
 
 /**
