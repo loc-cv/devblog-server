@@ -225,7 +225,7 @@ export const updateCurrentUser = async (req: Request, res: Response) => {
 // };
 
 /**
- * Add post to current user save list
+ * Add post to current user saved list
  * @route POST /api/users/me/savedposts
  * @access user
  */
@@ -246,12 +246,12 @@ export const addPostToSaveList = async (req: Request, res: Response) => {
   await updatePostById(postId, { $push: { savedBy: user } });
   res.status(StatusCodes.OK).json({
     status: 'success',
-    message: 'Post added to your save list',
+    message: 'Post added to your saved list',
   });
 };
 
 /**
- * Remove post from current user save list
+ * Remove post from current user saved list
  * @route DELETE /api/users/me/savedposts/:postId
  * @access user
  */
@@ -269,6 +269,6 @@ export const removePostFromSaveList = async (req: Request, res: Response) => {
   await updateUserById(user._id, { $pull: { savedPosts: post._id } });
   res.status(StatusCodes.OK).json({
     status: 'success',
-    message: 'Post removed from your save list',
+    message: 'Post removed from your saved list',
   });
 };
