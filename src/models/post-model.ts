@@ -10,6 +10,7 @@ export interface IPost {
   viewCount: number;
   likes: Types.ObjectId[];
   dislikes: Types.ObjectId[];
+  savedBy: Types.ObjectId[];
   updatedAt: Date;
   createdAt: Date;
 }
@@ -40,6 +41,7 @@ const postSchema = new Schema<IPost>(
     viewCount: { type: Number, default: 0 },
     likes: [{ type: Schema.Types.ObjectId, ref: 'User' }],
     dislikes: [{ type: Schema.Types.ObjectId, ref: 'User' }],
+    savedBy: [{ type: Schema.Types.ObjectId, ref: 'User' }],
   },
   { timestamps: true },
 );

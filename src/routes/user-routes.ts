@@ -4,8 +4,8 @@ import {
   deleteUser,
   getAllUsers,
   getCurrentUser,
-  getCurrentUserSavedPosts,
   getSingleUser,
+  removePostFromSaveList,
   toggleBanUser,
   updateCurrentUser,
   updateCurrentUserPassword,
@@ -35,8 +35,8 @@ router
 router.route('/:userId').get(getSingleUser);
 router
   .route('/me/savedposts')
-  .get(getCurrentUserSavedPosts)
   .post(validate(addPostToSaveListInputSchema), addPostToSaveList);
+router.route('/me/savedposts/:postId').delete(removePostFromSaveList);
 
 // Admin routes
 router.use(restrictTo('admin'));

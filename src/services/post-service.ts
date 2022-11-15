@@ -79,7 +79,7 @@ export const findAllPosts = async (
 
   posts = posts.filter(post => !post.author.isBanned);
 
-  const { author } = queryString;
+  const { author, savedby } = queryString;
   if (author) {
     const user = await findOneUser({ username: author });
     if (!user) {
@@ -95,6 +95,23 @@ export const findAllPosts = async (
       );
     }
     posts = posts.filter(post => post.author.username === author);
+  }
+
+  if (savedby) {
+    const user = await findOneUser({ username: savedby });
+    if (!user) {
+      throw new AppError(
+        StatusCodes.NOT_FOUND,
+        `No user with username ${author}`,
+      );
+    }
+    if (user.isBanned) {
+      throw new AppError(
+        StatusCodes.BAD_REQUEST,
+        `The user with username ${author} is banned`,
+      );
+    }
+    posts = posts.filter(post => post.savedBy.includes(user._id));
   }
 
   const { tags } = queryString;
