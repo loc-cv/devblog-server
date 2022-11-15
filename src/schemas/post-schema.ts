@@ -28,12 +28,12 @@ export const newPostInputSchema = z.object({
       .min(1, { message: 'Post content is required' }),
 
     tags: z
-      .string({
-        invalid_type_error:
-          'Post tags is a string which contains a list of tag names, separated by space',
+      .array(z.string(), {
         required_error: 'Post tags are required',
+        invalid_type_error: 'Post tags must be an array of strings',
       })
-      .min(1, { message: 'Post tags are required' }),
+      .min(1, { message: 'Please provide at least 1 tag' })
+      .max(4, { message: 'Please provide up to 4 tags' }),
   }),
 });
 
@@ -65,11 +65,12 @@ export const updatePostInputSchema = z.object({
       .optional(),
 
     tags: z
-      .string({
-        invalid_type_error:
-          'Post tags is a string which contains a list of tag names, separated by space',
+      .array(z.string(), {
+        required_error: 'Post tags are required',
+        invalid_type_error: 'Post tags must be an array of strings',
       })
-      .min(1, { message: "Post tags can't be empty" })
+      .min(1, { message: 'Please provide at least 1 tag' })
+      .max(4, { message: 'Please provide up to 4 tags' })
       .optional(),
   }),
 });

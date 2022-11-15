@@ -11,10 +11,10 @@ const populatedUserFields =
   'email username firstName lastName profilePhoto isBanned';
 const populatedTagsFields = 'name';
 
-export const filterTags = async (tags: string) => {
+export const filterTags = async (tags: string[]) => {
   const filteredTags = (
     await Promise.all(
-      tags.split(/\s+/).map(async tagName => {
+      tags.map(async tagName => {
         const tag = await findOneTag({ name: tagName });
         if (!tag) return [];
         return tag;
@@ -39,7 +39,7 @@ export const savePost = async (post: IPostDocument) => {
   await post.save({ validateModifiedOnly: true });
 };
 
-export const createNewPost = async (input: Partial<IPost>, tags: string) => {
+export const createNewPost = async (input: Partial<IPost>, tags: string[]) => {
   const filteredTags = await filterTags(tags);
   const post = await Post.create({ ...input, tags: filteredTags });
   await post.populate('tags', populatedTagsFields);
