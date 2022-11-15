@@ -37,7 +37,7 @@ export const getAllUsers = async (req: Request, res: Response) => {
 
 /**
  * Get a single user.
- * @route GET /api//users/:userId
+ * @route GET /api/users/:userId
  * @access user
  */
 export const getSingleUser = async (req: Request, res: Response) => {

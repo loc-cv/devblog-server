@@ -33,7 +33,6 @@ router
 router
   .route('/me/password')
   .put(validate(updatePasswordInputSchema), updateCurrentUserPassword);
-router.route('/:userId').get(getSingleUser);
 router
   .route('/me/savedposts')
   .get(getCurrentUserSavedPosts)
@@ -45,6 +44,7 @@ router.use(restrictTo('admin'));
 router.route('/').get(getAllUsers);
 router
   .route('/:userId')
+  .get(getSingleUser)
   .patch(validate(updateUserInputSchema), updateUser)
   .delete(deleteUser);
 router.route('/:userId/toggleban').put(toggleBanUser);
