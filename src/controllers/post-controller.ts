@@ -54,7 +54,7 @@ export const getSinglePost = async (req: Request, res: Response) => {
   const post = await updatePostById(
     postId,
     { $inc: { viewCount: 1 } },
-    { new: true },
+    { new: true, timestamps: false },
   );
   if (!post) {
     throw new AppError(StatusCodes.NOT_FOUND, `No post with ID: ${postId}`);
