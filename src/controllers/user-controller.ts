@@ -1,6 +1,10 @@
 import { Request, Response } from 'express';
 import { StatusCodes } from 'http-status-codes';
-import { findPostById, updatePostById } from '../services/post-service';
+import {
+  findAllPosts,
+  findPostById,
+  updatePostById,
+} from '../services/post-service';
 import {
   deleteUserById,
   excludeUserFields,
@@ -205,24 +209,27 @@ export const updateCurrentUser = async (req: Request, res: Response) => {
     .json({ status: 'success', message: 'Update your info successfully' });
 };
 
-// /**
-//  * Get all saved posts of current user
-//  * @route GET /api/users/me/savedposts
-//  * @access user
-//  */
-// export const getCurrentUserSavedPosts = async (req: Request, res: Response) => {
-//   const { user } = res.locals;
-//   const currentUser = await findUserById(user._id);
-//   if (!currentUser) {
-//     throw new AppError(StatusCodes.NOT_FOUND, 'Current user no longer exists');
-//   }
-//   const savedPosts = await findAllPosts(req.query);
-//   res.status(StatusCodes.OK).json({
-//     status: 'success',
-//     results: savedPosts.length,
-//     data: { posts: savedPosts },
-//   });
-// };
+/**
+ * Get all saved posts of current user
+ * @route GET /api/users/me/savedposts
+ * @access user
+ */
+export const getCurrentUserSavedPosts = async (req: Request, res: Response) => {
+  const { user } = res.locals;
+  const currentUser = await findUserById(user._id);
+  if (!currentUser) {
+    throw new AppError(StatusCodes.NOT_FOUND, 'Current user no longer exists');
+  }
+  const savedPosts = await findAllPosts({
+    ...req.query,
+    savedby: user.username,
+  });
+  res.status(StatusCodes.OK).json({
+    status: 'success',
+    results: savedPosts.length,
+    data: { posts: savedPosts },
+  });
+};
 
 /**
  * Add post to current user saved list
