@@ -1,5 +1,6 @@
 import { Request, Response } from 'express';
 import { StatusCodes } from 'http-status-codes';
+import { isValidObjectId } from 'mongoose';
 import {
   findAllPosts,
   findPostById,
@@ -9,6 +10,7 @@ import {
   deleteUserById,
   excludeUserFields,
   findAllUsers,
+  findOneUser,
   findUserById,
   isUsernameUnique,
   saveUser,
@@ -277,5 +279,28 @@ export const removePostFromSaveList = async (req: Request, res: Response) => {
   res.status(StatusCodes.OK).json({
     status: 'success',
     message: 'Post removed from your saved list',
+  });
+};
+
+/**
+ * Get user profile (info) from userId OR username
+ * @route GET /api/users/profile/:userinfo
+ * @access public
+ */
+export const getUserProfile = async (req: Request, res: Response) => {
+  const { userinfo } = req.params; // userinfo can be user id or username
+  let user;
+  if (isValidObjectId(userinfo)) {
+    user = await findUserById(userinfo);
+  }
+  if (!user) {
+    user = await findOneUser({ username: userinfo });
+  }
+  if (!user) {
+    throw new AppError(StatusCodes.NOT_FOUND, 'No user found');
+  }
+  res.status(StatusCodes.OK).json({
+    status: 'success',
+    data: { user: excludeUserFields(user) },
   });
 };

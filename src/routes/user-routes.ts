@@ -6,6 +6,7 @@ import {
   getCurrentUser,
   getCurrentUserSavedPosts,
   getSingleUser,
+  getUserProfile,
   removePostFromSaveList,
   toggleBanUser,
   updateCurrentUser,
@@ -23,6 +24,9 @@ import {
 } from '../schemas/user-schema';
 
 const router = express.Router();
+
+// Public routes
+router.route('/profile/:userinfo').get(getUserProfile);
 
 // User routes
 router.use(deserializeUser, requireAuth);
