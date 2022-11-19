@@ -222,14 +222,14 @@ export const getCurrentUserSavedPosts = async (req: Request, res: Response) => {
   if (!currentUser) {
     throw new AppError(StatusCodes.NOT_FOUND, 'Current user no longer exists');
   }
-  const savedPosts = await findAllPosts({
+  const { posts, results } = await findAllPosts({
     ...req.query,
     savedby: user.username,
   });
   res.status(StatusCodes.OK).json({
     status: 'success',
-    results: savedPosts.length,
-    data: { posts: savedPosts },
+    results,
+    data: { posts },
   });
 };
 

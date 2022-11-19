@@ -1,5 +1,6 @@
 import bcrypt from 'bcryptjs';
 import { Document, model, Model, Schema, Types } from 'mongoose';
+import { updateManyPosts } from '../services/post-service';
 
 export interface IUser {
   firstName: string;
@@ -128,6 +129,15 @@ userSchema.pre('save', async function (next) {
 userSchema.pre('save', async function (next) {
   if (!this.isModified('password') || this.isNew) return next();
   this.passwordChangedAt = new Date();
+  next();
+});
+
+userSchema.pre('save', async function (next) {
+  await updateManyPosts(
+    { 'author._id': this._id },
+    { $set: { author: this } },
+    { timestamps: false },
+  );
   next();
 });
 

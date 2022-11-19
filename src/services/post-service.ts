@@ -1,15 +1,13 @@
 import { StatusCodes } from 'http-status-codes';
-import { QueryOptions, UpdateQuery } from 'mongoose';
+import { FilterQuery, QueryOptions, UpdateQuery } from 'mongoose';
 import Post, { IPost, IPostDocument } from '../models/post-model';
-import { ITag } from '../models/tag-model';
-import { IUser } from '../models/user-model';
 import AppError from '../utils/app-error';
 import { findOneTag } from './tag-service';
-import { findOneUser } from './user-service';
+import { excludeUserFields, findOneUser } from './user-service';
 
-const populatedUserFields =
-  'email username firstName lastName profilePhoto isBanned';
-const populatedTagsFields = 'name';
+// const populatedUserFields =
+//   'email username firstName lastName profilePhoto isBanned';
+// const populatedTagsFields = 'name';
 
 export const filterTags = async (tags: string[]) => {
   const filteredTags = (
@@ -20,7 +18,13 @@ export const filterTags = async (tags: string[]) => {
         return tag;
       }),
     )
-  ).flatMap(tag => tag);
+  )
+    .flatMap(tag => tag)
+    .map(tagDoc => ({
+      _id: tagDoc._id,
+      name: tagDoc.name,
+      description: tagDoc.description,
+    }));
 
   if (filteredTags.length < 1) {
     throw new AppError(
@@ -42,8 +46,6 @@ export const savePost = async (post: IPostDocument) => {
 export const createNewPost = async (input: Partial<IPost>, tags: string[]) => {
   const filteredTags = await filterTags(tags);
   const post = await Post.create({ ...input, tags: filteredTags });
-  await post.populate('tags', populatedTagsFields);
-  await post.populate('author', populatedUserFields);
   return post;
 };
 
@@ -55,8 +57,54 @@ function isStringArray(arr: any): arr is Array<string> {
 export const findAllPosts = async (
   queryString: Record<string, unknown> = {},
 ) => {
+  const { author, savedby, tags } = queryString;
   const query = Post.find().sort('-createdAt');
 
+  // Query by author
+  if (typeof author === 'string' && author !== '') {
+    const user = await findOneUser({ username: author });
+    if (!user) {
+      throw new AppError(
+        StatusCodes.NOT_FOUND,
+        `No user with username ${author}`,
+      );
+    }
+    if (user.isBanned) {
+      throw new AppError(
+        StatusCodes.BAD_REQUEST,
+        `The user with username ${author} is banned`,
+      );
+    }
+    query.where('author.username', author);
+  }
+
+  // Query by savedby
+  if (typeof savedby === 'string' && savedby !== '') {
+    const user = await findOneUser({ username: savedby });
+    if (!user) {
+      throw new AppError(
+        StatusCodes.NOT_FOUND,
+        `No user with username ${author}`,
+      );
+    }
+    if (user.isBanned) {
+      throw new AppError(
+        StatusCodes.BAD_REQUEST,
+        `The user with username ${author} is banned`,
+      );
+    }
+    query.find({ savedBy: user._id });
+  }
+
+  // Query by tags
+  if (tags && isStringArray(tags)) {
+    query.find({ 'tags.name': { $all: tags } });
+  }
+
+  // Don't query posts whose author is banned
+  query.where('author.isBanned').ne(true);
+
+  // Pagination
   const page =
     (typeof queryString.page === 'string' && parseInt(queryString.page, 10)) ||
     1;
@@ -73,63 +121,26 @@ export const findAllPosts = async (
   const skip = (page - 1) * limit;
   query.skip(skip).limit(limit);
 
-  let posts = await query
-    .populate<{ author: IUser }>('author', populatedUserFields)
-    .populate<{ tags: ITag[] }>('tags', populatedTagsFields);
+  // Exec query
+  const results = await Post.countDocuments(query);
+  const posts = await query.transform(async res => {
+    // eslint-disable-next-line @typescript-eslint/return-await
+    return await Promise.all(
+      res.map(async post => {
+        const postAuthor = await findOneUser({
+          username: post.author.username,
+        });
+        if (!postAuthor) return post;
+        return Object.assign(post, { author: excludeUserFields(postAuthor) });
+      }),
+    );
+  });
 
-  posts = posts.filter(post => !post.author.isBanned);
-
-  const { author, savedby } = queryString;
-  if (author) {
-    const user = await findOneUser({ username: author });
-    if (!user) {
-      throw new AppError(
-        StatusCodes.NOT_FOUND,
-        `No user with username ${author}`,
-      );
-    }
-    if (user.isBanned) {
-      throw new AppError(
-        StatusCodes.BAD_REQUEST,
-        `The user with username ${author} is banned`,
-      );
-    }
-    posts = posts.filter(post => post.author.username === author);
-  }
-
-  if (savedby) {
-    const user = await findOneUser({ username: savedby });
-    if (!user) {
-      throw new AppError(
-        StatusCodes.NOT_FOUND,
-        `No user with username ${author}`,
-      );
-    }
-    if (user.isBanned) {
-      throw new AppError(
-        StatusCodes.BAD_REQUEST,
-        `The user with username ${author} is banned`,
-      );
-    }
-    posts = posts.filter(post => post.savedBy.includes(user._id));
-  }
-
-  const { tags } = queryString;
-  if (tags && isStringArray(tags)) {
-    const filteredPosts = posts.filter(post => {
-      const postTagNames = post.tags.map(tag => tag.name);
-      return tags.every(tag => postTagNames.includes(tag));
-    });
-    posts = filteredPosts;
-  }
-
-  return posts;
+  return { posts, results };
 };
 
 export const findPostById = async (id: string) => {
-  const post = await Post.findById(id)
-    .populate<{ author: IUser }>('author', populatedUserFields)
-    .populate<{ tags: ITag[] }>('tags', populatedTagsFields);
+  const post = await Post.findById(id);
   return post;
 };
 
@@ -138,9 +149,25 @@ export const updatePostById = async (
   update: UpdateQuery<IPostDocument>,
   options?: QueryOptions,
 ) => {
-  const post = await Post.findByIdAndUpdate(id, update, options)
-    .populate<{ author: IUser }>('author', populatedUserFields)
-    .populate<{ tags: ITag[] }>('tags', populatedTagsFields);
+  const post = await Post.findByIdAndUpdate(id, update, options);
+  return post;
+};
+
+export const updateOnePost = async (
+  filter: FilterQuery<IPostDocument>,
+  update: UpdateQuery<IPostDocument>,
+  options?: QueryOptions,
+) => {
+  const post = await Post.findOneAndUpdate(filter, update, options);
+  return post;
+};
+
+export const updateManyPosts = async (
+  filter: FilterQuery<IPostDocument>,
+  update: UpdateQuery<IPostDocument>,
+  options?: QueryOptions,
+) => {
+  const post = await Post.updateMany(filter, update, options);
   return post;
 };
 

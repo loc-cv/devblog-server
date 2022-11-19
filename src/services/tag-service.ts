@@ -66,3 +66,7 @@ export const deleteOneTag = async (
   const tag = await Tag.findOneAndDelete(filter, options);
   return tag;
 };
+
+export const saveTag = async (tag: ITagDocument) => {
+  await tag.save({ validateModifiedOnly: true });
+};

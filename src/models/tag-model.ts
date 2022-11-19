@@ -1,4 +1,5 @@
 import { Document, Schema, Types, model } from 'mongoose';
+import { updateManyPosts } from '../services/post-service';
 
 export interface ITag {
   name: string;
@@ -31,6 +32,20 @@ const tagSchema = new Schema<ITag>(
   },
   { timestamps: true },
 );
+
+tagSchema.pre('save', async function (next) {
+  await updateManyPosts({ 'tags._id': this._id }, { $set: { 'tags.$': this } });
+  next();
+});
+
+tagSchema.pre('findOneAndDelete', async function (next) {
+  const tagToDelete = await this.model.findOne(this.getQuery());
+  await updateManyPosts(
+    { 'tags._id': tagToDelete._id },
+    { $pull: { tags: { _id: tagToDelete._id } } },
+  );
+  next();
+});
 
 const Tag = model<ITag>('Tag', tagSchema);
 

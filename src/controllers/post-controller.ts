@@ -24,7 +24,12 @@ export const createPost = async (req: Request, res: Response) => {
   } = req as NewPostInput;
 
   const post = await createNewPost(
-    { title, summary, content, author: user._id },
+    {
+      title,
+      summary,
+      content,
+      author: user,
+    },
     tags,
   );
   await updateUserById(user._id, { $inc: { postCount: 1 } });
@@ -41,10 +46,10 @@ export const createPost = async (req: Request, res: Response) => {
  * @access public
  */
 export const getAllPosts = async (req: Request, res: Response) => {
-  const posts = await findAllPosts(req.query);
+  const { posts, results } = await findAllPosts(req.query);
   res.status(StatusCodes.OK).json({
     status: 'success',
-    result: posts.length,
+    results,
     data: { posts },
   });
 };

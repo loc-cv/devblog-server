@@ -5,7 +5,7 @@ import {
   deleteOneTag,
   findAllTags,
   findOneTag,
-  updateOneTag,
+  saveTag,
 } from '../services/tag-service';
 import AppError from '../utils/app-error';
 
@@ -73,15 +73,15 @@ export const updateTag = async (req: Request, res: Response) => {
     throw new AppError(StatusCodes.BAD_REQUEST, 'Nothing to update');
   }
 
-  const tag = await updateOneTag(
-    { name: tagName },
-    { $set: { name, description, lastUpdatedBy: user._id } },
-    { runValidators: true },
-  );
-
+  const tag = await findOneTag({ name: tagName });
   if (!tag) {
     throw new AppError(StatusCodes.NOT_FOUND, `No tag with name: ${tagName}`);
   }
+
+  tag.name = name || tag.name;
+  tag.description = description || tag.description;
+  tag.lastUpdatedBy = user._id;
+  await saveTag(tag);
 
   res
     .status(StatusCodes.OK)

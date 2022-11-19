@@ -5,8 +5,19 @@ export interface IPost {
   summary: string;
   content: string;
   coverImage?: string;
-  author: Types.ObjectId;
-  tags: Types.ObjectId[];
+  author: {
+    _id: Types.ObjectId;
+    username: string;
+    isBanned: boolean;
+    firstName: string;
+    lastName: string;
+    email: string;
+    role: string;
+    profilePhoto: string;
+    bio: string;
+    postCount: string;
+  };
+  tags: { _id: Types.ObjectId; name: string; description: string }[];
   viewCount: number;
   likes: Types.ObjectId[];
   dislikes: Types.ObjectId[];
@@ -36,8 +47,25 @@ const postSchema = new Schema<IPost>(
       required: [true, 'Post content is required'],
     },
     coverImage: String,
-    author: { type: Schema.Types.ObjectId, ref: 'User' },
-    tags: [{ type: Schema.Types.ObjectId, ref: 'Tag' }],
+    author: {
+      _id: { type: Schema.Types.ObjectId, ref: 'User' },
+      username: String,
+      isBanned: { type: Boolean, default: false },
+      firstName: String,
+      lastName: String,
+      email: String,
+      role: String,
+      profilePhoto: String,
+      bio: String,
+      postCount: String,
+    },
+    tags: [
+      {
+        _id: { type: Schema.Types.ObjectId, ref: 'Tag' },
+        name: String,
+        description: String,
+      },
+    ],
     viewCount: { type: Number, default: 0 },
     likes: [{ type: Schema.Types.ObjectId, ref: 'User' }],
     dislikes: [{ type: Schema.Types.ObjectId, ref: 'User' }],
