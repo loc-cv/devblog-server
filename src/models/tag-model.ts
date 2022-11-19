@@ -34,7 +34,11 @@ const tagSchema = new Schema<ITag>(
 );
 
 tagSchema.pre('save', async function (next) {
-  await updateManyPosts({ 'tags._id': this._id }, { $set: { 'tags.$': this } });
+  await updateManyPosts(
+    { 'tags._id': this._id },
+    { $set: { 'tags.$': this } },
+    { timestamps: false },
+  );
   next();
 });
 
@@ -43,6 +47,7 @@ tagSchema.pre('findOneAndDelete', async function (next) {
   await updateManyPosts(
     { 'tags._id': tagToDelete._id },
     { $pull: { tags: { _id: tagToDelete._id } } },
+    { timestamps: false },
   );
   next();
 });
