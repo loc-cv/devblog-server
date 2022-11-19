@@ -252,7 +252,11 @@ export const addPostToSaveList = async (req: Request, res: Response) => {
     );
   }
   await updateUserById(user._id, { $push: { savedPosts: post } });
-  await updatePostById(postId, { $push: { savedBy: user } });
+  await updatePostById(
+    postId,
+    { $push: { savedBy: user } },
+    { timestamps: false },
+  );
   res.status(StatusCodes.OK).json({
     status: 'success',
     message: 'Post added to your saved list',
@@ -274,7 +278,11 @@ export const removePostFromSaveList = async (req: Request, res: Response) => {
   if (!post.savedBy.includes(user._id)) {
     throw new AppError(StatusCodes.CONFLICT, 'You have not saved this post');
   }
-  await updatePostById(postId, { $pull: { savedBy: user._id } });
+  await updatePostById(
+    postId,
+    { $pull: { savedBy: user._id } },
+    { timestamps: false },
+  );
   await updateUserById(user._id, { $pull: { savedPosts: post._id } });
   res.status(StatusCodes.OK).json({
     status: 'success',
