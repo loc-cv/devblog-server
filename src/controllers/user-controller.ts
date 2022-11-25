@@ -198,8 +198,13 @@ export const updateCurrentUser = async (req: Request, res: Response) => {
   currentUser.bio = req.body.bio || currentUser.bio;
 
   // Check unique username
-  if (req.body.username && !(await isUsernameUnique(req.body.username))) {
-    throw new AppError(StatusCodes.CONFLICT, 'Username has already been taken');
+  if (req.body.username !== currentUser.username) {
+    if (req.body.username && !(await isUsernameUnique(req.body.username))) {
+      throw new AppError(
+        StatusCodes.CONFLICT,
+        'Username has already been taken',
+      );
+    }
   }
   currentUser.username = req.body.username || currentUser.username;
 
