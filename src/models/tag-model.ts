@@ -33,6 +33,9 @@ const tagSchema = new Schema<ITag>(
   { timestamps: true },
 );
 
+/**
+ * Sync posts with tag update (because of denormalization)
+ */
 tagSchema.pre('save', async function (next) {
   await updateManyPosts(
     { 'tags._id': this._id },
@@ -42,6 +45,9 @@ tagSchema.pre('save', async function (next) {
   next();
 });
 
+/**
+ * Sync posts with tag delete (because of denormalization)
+ */
 tagSchema.pre('findOneAndDelete', async function (next) {
   const tagToDelete = await this.model.findOne(this.getQuery());
   await updateManyPosts(

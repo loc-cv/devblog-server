@@ -132,6 +132,9 @@ userSchema.pre('save', async function (next) {
   next();
 });
 
+/**
+ * Sync posts with user update (because of denormalization)
+ */
 userSchema.pre('save', async function (next) {
   await updateManyPosts(
     { 'author._id': this._id },
