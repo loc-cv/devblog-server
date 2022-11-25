@@ -93,7 +93,6 @@ export const updateUserInputSchema = z.object({
     bio: z
       .string({ invalid_type_error: 'Bio must be a string' })
       .trim()
-      .min(1, { message: "Bio can't be empty" })
       .max(150, 'Bio character limit is 150 characters')
       .optional(),
 
@@ -102,7 +101,7 @@ export const updateUserInputSchema = z.object({
       .trim()
       .min(3, { message: 'Username must have at least 3 characters' })
       .max(30, { message: 'Username character limit is 30 characters' })
-      .regex(/^[a-zA-Z][a-zA-Z0-9]*/, {
+      .regex(/^[a-zA-Z][a-zA-Z0-9]*$/, {
         message:
           "Username can only contain alpha numeric character, and can't start with a number",
       })
