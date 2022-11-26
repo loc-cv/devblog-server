@@ -4,7 +4,6 @@ import {
   deleteUser,
   getAllUsers,
   getCurrentUser,
-  getCurrentUserSavedPosts,
   getSingleUser,
   getUserProfile,
   removePostFromSaveList,
@@ -39,7 +38,6 @@ router
   .put(validate(updatePasswordInputSchema), updateCurrentUserPassword);
 router
   .route('/me/savedposts')
-  .get(getCurrentUserSavedPosts)
   .post(validate(addPostToSaveListInputSchema), addPostToSaveList);
 router.route('/me/savedposts/:postId').delete(removePostFromSaveList);
 

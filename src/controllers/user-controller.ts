@@ -217,28 +217,6 @@ export const updateCurrentUser = async (req: Request, res: Response) => {
 };
 
 /**
- * Get all saved posts of current user
- * @route GET /api/users/me/savedposts
- * @access user
- */
-export const getCurrentUserSavedPosts = async (req: Request, res: Response) => {
-  const { user } = res.locals;
-  const currentUser = await findUserById(user._id);
-  if (!currentUser) {
-    throw new AppError(StatusCodes.NOT_FOUND, 'Current user no longer exists');
-  }
-  const { posts, results } = await findAllPosts({
-    ...req.query,
-    savedby: user.username,
-  });
-  res.status(StatusCodes.OK).json({
-    status: 'success',
-    results,
-    data: { posts },
-  });
-};
-
-/**
  * Add post to current user saved list
  * @route POST /api/users/me/savedposts
  * @access user
