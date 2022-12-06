@@ -57,7 +57,7 @@ function isStringArray(arr: any): arr is Array<string> {
 export const findAllPosts = async (
   queryString: Record<string, unknown> = {},
 ) => {
-  const { author, savedby, tags } = queryString;
+  const { author, savedby, tags, search } = queryString;
   const query = Post.find().sort('-createdAt');
 
   // Query by author
@@ -94,6 +94,11 @@ export const findAllPosts = async (
       );
     }
     query.find({ savedBy: user._id });
+  }
+
+  // Query by search string (title search)
+  if (typeof search === 'string' && search !== '') {
+    query.find({ title: { $regex: search, $options: 'i' } });
   }
 
   // Query by tags
@@ -138,7 +143,6 @@ export const findAllPosts = async (
     );
   });
 
-  return { posts, total, totalPages, page, perPage: limit };
   return { posts, total, totalPages, page, results: posts.length };
 };
 
