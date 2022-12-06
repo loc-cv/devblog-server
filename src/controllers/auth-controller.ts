@@ -23,7 +23,7 @@ export const accessTokenCookieOptions: CookieOptions = {
   maxAge: ms(config.get<string>('accessTokenExpiresIn')),
   httpOnly: true,
   sameSite: 'none',
-  secure: false,
+  secure: true,
 };
 
 export const refreshTokenCookieOptions: CookieOptions = {
@@ -33,7 +33,7 @@ export const refreshTokenCookieOptions: CookieOptions = {
   maxAge: ms(config.get<string>('refreshTokenExpiresIn')),
   httpOnly: true,
   sameSite: 'none',
-  secure: false,
+  secure: true,
 };
 
 /**
