@@ -119,10 +119,12 @@ export const findAllPosts = async (
     );
   }
   const skip = (page - 1) * limit;
+  // Count total results and pages before paginating
+  const total = await Post.countDocuments(query);
+  const totalPages = Math.ceil(total / limit);
   query.skip(skip).limit(limit);
 
   // Exec query
-  const results = await Post.countDocuments(query);
   const posts = await query.transform(async res => {
     // eslint-disable-next-line @typescript-eslint/return-await
     return await Promise.all(
@@ -136,7 +138,7 @@ export const findAllPosts = async (
     );
   });
 
-  return { posts, results };
+  return { posts, total, totalPages, page, perPage: limit };
 };
 
 export const findPostById = async (id: string) => {

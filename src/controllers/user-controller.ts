@@ -1,11 +1,7 @@
 import { Request, Response } from 'express';
 import { StatusCodes } from 'http-status-codes';
 import { isValidObjectId } from 'mongoose';
-import {
-  findAllPosts,
-  findPostById,
-  updatePostById,
-} from '../services/post-service';
+import { findPostById, updatePostById } from '../services/post-service';
 import {
   deleteUserById,
   excludeUserFields,
@@ -29,10 +25,15 @@ import {
  * @access admin
  */
 export const getAllUsers = async (req: Request, res: Response) => {
-  const users = await findAllUsers(req.query);
+  const { users, total, totalPages, page, perPage } = await findAllUsers(
+    req.query,
+  );
   res.status(StatusCodes.OK).json({
     status: 'success',
-    results: users.length,
+    total,
+    totalPages,
+    page,
+    perPage,
     data: { users: users.map(user => excludeUserFields(user)) },
   });
 };

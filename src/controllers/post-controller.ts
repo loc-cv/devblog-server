@@ -46,10 +46,15 @@ export const createPost = async (req: Request, res: Response) => {
  * @access public
  */
 export const getAllPosts = async (req: Request, res: Response) => {
-  const { posts, results } = await findAllPosts(req.query);
+  const { posts, total, totalPages, page, perPage } = await findAllPosts(
+    req.query,
+  );
   res.status(StatusCodes.OK).json({
     status: 'success',
-    results,
+    total,
+    totalPages,
+    page,
+    perPage,
     data: { posts },
   });
 };
@@ -105,9 +110,13 @@ export const updatePost = async (req: Request, res: Response) => {
     },
   });
 
-  res
-    .status(StatusCodes.OK)
-    .json({ status: 'success', message: 'Update post successfully.' });
+  res.status(StatusCodes.OK).json({
+    status: 'success',
+    message: 'Update post successfully.',
+    data: {
+      post: { id: post._id },
+    },
+  });
 };
 
 /**
@@ -161,9 +170,10 @@ export const toggleLikePost = async (req: Request, res: Response) => {
     like => String(like._id) === String(user._id),
   );
   let message = '';
+  const updateOptions = { timestamps: false };
   if (isAlreadyLiked) {
     // If user already liked the post, remove (pull) user from likes array.
-    await updatePostById(postId, { $pull: { likes: user._id } });
+    await updatePostById(postId, { $pull: { likes: user._id } }, updateOptions);
     message = 'Unlike post successfully.';
   } else {
     // else if user didn't like the post, add him/her to likes array ...
@@ -174,7 +184,7 @@ export const toggleLikePost = async (req: Request, res: Response) => {
         $push: { likes: user._id },
         $pull: { dislikes: user._id },
       },
-      { runValidators: true },
+      updateOptions,
     );
     message = 'Like post successfully.';
   }
@@ -200,9 +210,14 @@ export const toggleDislikePost = async (req: Request, res: Response) => {
     dislike => String(dislike._id) === String(user._id),
   );
   let message = '';
+  const updateOptions = { timestamps: false };
   if (isAlreadyDisliked) {
     // If user already disliked the post, remove (pull) user from dislikes array.
-    await updatePostById(postId, { $pull: { dislikes: user._id } });
+    await updatePostById(
+      postId,
+      { $pull: { dislikes: user._id } },
+      updateOptions,
+    );
     message = 'Undislike post successfully.';
   } else {
     // else if user didn't dislike the post, add him/her to dislikes array ...
@@ -213,7 +228,7 @@ export const toggleDislikePost = async (req: Request, res: Response) => {
         $push: { dislikes: user._id },
         $pull: { likes: user._id },
       },
-      { runValidators: true },
+      updateOptions,
     );
     message = 'Dislike post successfully.';
   }

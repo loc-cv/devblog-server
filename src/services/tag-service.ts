@@ -32,10 +32,13 @@ export const findAllTags = async (
     );
   }
   const skip = (page - 1) * limit;
+  // Count total results and pages before paginating
+  const total = await Tag.countDocuments(query);
+  const totalPages = Math.ceil(total / limit);
   query.skip(skip).limit(limit);
 
   const tags = await query;
-  return tags;
+  return { tags, total, totalPages, page, perPage: limit };
 };
 
 export const findOneTag = async (

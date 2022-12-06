@@ -43,10 +43,15 @@ export const createReport = async (req: Request, res: Response) => {
  * @access admin
  */
 export const getAllReports = async (req: Request, res: Response) => {
-  const reports = await findAllReport();
+  const { reports, total, totalPages, page, perPage } = await findAllReport(
+    req.query,
+  );
   res.status(StatusCodes.OK).json({
     status: 'success',
-    results: reports.length,
+    total,
+    totalPages,
+    page,
+    perPage,
     data: { reports },
   });
 };

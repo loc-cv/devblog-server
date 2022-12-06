@@ -47,10 +47,13 @@ export const findAllUsers = async (
     );
   }
   const skip = (page - 1) * limit;
+  // Count total results and pages before paginating
+  const total = await User.countDocuments(query);
+  const totalPages = Math.ceil(total / limit);
   query.skip(skip).limit(limit);
 
   const users = await query;
-  return users;
+  return { users, total, totalPages, page, perPage: limit };
 };
 
 export const findOneUser = async (

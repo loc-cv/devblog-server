@@ -37,10 +37,15 @@ export const createTag = async (req: Request, res: Response) => {
  * @access public
  */
 export const getAllTags = async (req: Request, res: Response) => {
-  const tags = await findAllTags(req.query);
+  const { tags, total, totalPages, page, perPage } = await findAllTags(
+    req.query,
+  );
   res.status(StatusCodes.OK).json({
     status: 'success',
-    results: tags.length,
+    total,
+    totalPages,
+    page,
+    perPage,
     data: { tags },
   });
 };
