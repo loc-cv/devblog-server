@@ -139,6 +139,7 @@ export const findAllPosts = async (
   });
 
   return { posts, total, totalPages, page, perPage: limit };
+  return { posts, total, totalPages, page, results: posts.length };
 };
 
 export const findPostById = async (id: string) => {

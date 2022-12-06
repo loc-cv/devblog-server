@@ -53,7 +53,7 @@ export const findAllUsers = async (
   query.skip(skip).limit(limit);
 
   const users = await query;
-  return { users, total, totalPages, page, perPage: limit };
+  return { users, total, totalPages, page, results: users.length };
 };
 
 export const findOneUser = async (

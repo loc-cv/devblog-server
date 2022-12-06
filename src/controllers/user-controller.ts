@@ -25,7 +25,7 @@ import {
  * @access admin
  */
 export const getAllUsers = async (req: Request, res: Response) => {
-  const { users, total, totalPages, page, perPage } = await findAllUsers(
+  const { users, total, totalPages, page, results } = await findAllUsers(
     req.query,
   );
   res.status(StatusCodes.OK).json({
@@ -33,7 +33,7 @@ export const getAllUsers = async (req: Request, res: Response) => {
     total,
     totalPages,
     page,
-    perPage,
+    results,
     data: { users: users.map(user => excludeUserFields(user)) },
   });
 };

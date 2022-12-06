@@ -38,7 +38,7 @@ export const findAllReport = async (
   query.skip(skip).limit(limit);
 
   const reports = await query;
-  return { reports, total, totalPages, page, perPage: limit };
+  return { reports, total, totalPages, page, results: reports.length };
 };
 
 export const findReportById = async (id: string) => {

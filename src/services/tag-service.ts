@@ -38,7 +38,7 @@ export const findAllTags = async (
   query.skip(skip).limit(limit);
 
   const tags = await query;
-  return { tags, total, totalPages, page, perPage: limit };
+  return { tags, total, totalPages, page, results: tags.length };
 };
 
 export const findOneTag = async (

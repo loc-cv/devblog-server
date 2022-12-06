@@ -46,7 +46,7 @@ export const createPost = async (req: Request, res: Response) => {
  * @access public
  */
 export const getAllPosts = async (req: Request, res: Response) => {
-  const { posts, total, totalPages, page, perPage } = await findAllPosts(
+  const { posts, total, totalPages, page, results } = await findAllPosts(
     req.query,
   );
   res.status(StatusCodes.OK).json({
@@ -54,7 +54,7 @@ export const getAllPosts = async (req: Request, res: Response) => {
     total,
     totalPages,
     page,
-    perPage,
+    results,
     data: { posts },
   });
 };
