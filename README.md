@@ -13,6 +13,12 @@ This is the back-end of Medium-like web app, created with **Express**, **Typescr
 - Organize configurations with [Node-config](https://www.npmjs.com/package/config).
 - Every POST or PATCH routes has validation middlewares with Zod.
 
+### Database schema
+
+![Database schema](./images/database-schema.png)
+
+*Note: **Category** is actually **Tag** in the source code.*
+
 ### Installation and Setup Instructions
 
 Clone the repository to your local machine:
