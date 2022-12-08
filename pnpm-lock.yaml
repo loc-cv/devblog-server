@@ -12,7 +12,6 @@ specifiers:
   '@types/ms': ^0.7.31
   '@types/node': ^18.11.8
   '@types/nodemailer': ^6.4.6
-  '@types/validator': ^13.7.10
   '@typescript-eslint/eslint-plugin': ^5.42.0
   '@typescript-eslint/parser': ^5.42.0
   bcryptjs: ^2.4.3
@@ -76,7 +75,6 @@ devDependencies:
   '@types/ms': 0.7.31
   '@types/node': 18.11.8
   '@types/nodemailer': 6.4.6
-  '@types/validator': 13.7.10
   '@typescript-eslint/eslint-plugin': 5.42.0_6xw5wg2354iw4zujk2f3vyfrzu
   '@typescript-eslint/parser': 5.42.0_wyqvi574yv7oiwfeinomdzmc3m
   eslint: 8.26.0
@@ -1227,10 +1225,6 @@ packages:
     dependencies:
       '@types/mime': 3.0.1
       '@types/node': 18.11.8
-    dev: true
-
-  /@types/validator/13.7.10:
-    resolution: {integrity: sha512-t1yxFAR2n0+VO6hd/FJ9F2uezAZVWHLmpmlJzm1eX03+H7+HsuTAp7L8QJs+2pQCfWkP1+EXsGK9Z9v7o/qPVQ==}
     dev: true
 
   /@types/webidl-conversions/7.0.0:
