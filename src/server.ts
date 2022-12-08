@@ -9,8 +9,6 @@ import app from './app';
 import connectDb from './utils/connect-db';
 // import connectRedis from './utils/connect-redis';
 
-dotenv.config();
-
 const port = config.get<number>('port');
 
 app.listen(port, () => {
